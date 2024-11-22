@@ -1,4 +1,4 @@
 [submodule "Meshtastic-arduino"]
 	path = lib
 	url = https://github.com/pdxlocations/Meshtastic-arduino.git
-	branch = master
+	branch = main
