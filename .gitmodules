@@ -1,3 +1,3 @@
-[submodule "Meshtastic-arduino"]
-	path = lib
+[submodule "lib/Meshtastic-arduino"]
+	path = lib/Meshtastic-arduino
 	url = https://github.com/pdxlocations/Meshtastic-arduino.git
