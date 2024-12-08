@@ -153,7 +153,7 @@ void setup() {
   mt_request_node_report(connected_callback);
 
   // Register a callback function to be called whenever a text message is received
-  set_directed_text_message_callback(text_message_callback);  
+  set_text_message_callback(text_message_callback);  
 }
 
 void loop() {
