@@ -102,8 +102,8 @@ bool mt_send_admin_payload(const meshtastic_Data_payload_t& payload) {
 bool mt_send_set_role() {
     meshtastic_AdminMessage admin = meshtastic_AdminMessage_init_default;
     admin.which_payload_variant = meshtastic_AdminMessage_set_config_tag;
+    admin.set_config.which_payload_variant = meshtastic_Config_device_tag;
     admin.set_config.payload_variant.device.role = meshtastic_Config_DeviceConfig_Role_CLIENT_MUTE;
-
     meshtastic_Data_payload_t payload;
     if (!encode_admin_message(admin, payload)) return false;
 
