@@ -9,6 +9,8 @@
 #define BAUD_RATE 9600
 #define SEND_PERIOD 30
 
+#define MT_DEBUGGING
+
 const int leds[] = {D0, D1, D2};       // Array to hold LED pins
 bool led_states[] = {LOW, LOW, LOW};   // Array to track each LED's state
 const int num_leds = sizeof(leds) / sizeof(leds[0]); // Number of LEDs
@@ -124,6 +126,7 @@ void node_report_callback(mt_node_t *node, mt_nr_progress_t progress) {
 
 
 void setup() {
+  delay(2000);
 
   for (int i = 0; i < num_leds; i++) {
     pinMode(leds[i], OUTPUT);
@@ -141,12 +144,10 @@ void setup() {
     }
   }
 
-  Serial.print("Booted Meshtastic send/receive client in serial mode");
+  Serial.println("Booted Meshtastic send/receive client in serial mode");
   mt_serial_init(SERIAL_RX_PIN, SERIAL_TX_PIN, BAUD_RATE);
 
-  // Set to true if you want debug messages
-  mt_set_debug(true);
-  
+
   randomSeed(micros());
 
   // Initial connection to the Meshtastic device
@@ -171,10 +172,12 @@ void loop() {
     // mt_send_text("Hello, world!", dest, channel_index);
 
 
-    // Serial.print("My Node Number is: ");
-    // Serial.println(my_node_num);
+    Serial.print("My Node Number is: ");
+    Serial.println(my_node_num);
 
     next_send_time = now + SEND_PERIOD * 1000;
+
+    Serial.println("Looping...");
   }
 
 }
