@@ -134,7 +134,7 @@ void print_device_config(const meshtastic_Config_DeviceConfig &device) {
   Serial.println(device.role);
   Serial.print("  Serial Number: ");
   Serial.println(device.is_managed);
-  // Print other fields as needed
+  // ...
 }
 
 void print_lora_config(const meshtastic_Config_LoRaConfig &lora) {
@@ -143,7 +143,7 @@ void print_lora_config(const meshtastic_Config_LoRaConfig &lora) {
   Serial.println(lora.modem_preset);
   Serial.print("  Region: ");
   Serial.println(lora.region);
-  // Print more lora fields as needed
+  // ...
 }
 
 void print_config(const meshtastic_Config &config) {
@@ -175,21 +175,14 @@ void node_report_callback(mt_node_t *node, mt_nr_progress_t progress)
       Serial.print("I am: ");
       Serial.println(my_node_num);
     }
-
-    // // If config is available
-    // if (node->config) {
-    //   print_config(node->config);
-    // } else {
-    //   Serial.println("No config found in node.");
-    // }
   }
 }
 
 void setup()
 {
+  Serial.begin(9600);
   delay(4000);
 
-  Serial.begin(9600);
   while (true)
   {
     if (Serial)
@@ -207,22 +200,29 @@ void setup()
   mt_serial_init(SERIAL_RX_PIN, SERIAL_TX_PIN, BAUD_RATE);
   mt_request_node_report(connected_callback);
 
-  Serial.print("Waiting for my node number to be set...");
+  Serial.print("Waiting for my node number to be set...\n");
   while (my_node_num == 0)
   {
-    mt_loop(millis());
+    uint32_t now = millis();
+    mt_loop(now);
     Serial.print(".");
     delay(100);
   }
-
-  Serial.println("sending role change...");
-  mt_send_set_role(meshtastic_Config_DeviceConfig_Role_CLIENT_HIDDEN);
+  
 }
 
+bool not_sent = true;
 void loop()
 {
   uint32_t now = millis();
   can_send = mt_loop(now);
+
+  if (can_send && not_sent){
+    Serial.println("sending role change...");
+    mt_send_set_role(meshtastic_Config_DeviceConfig_Role_CLIENT_HIDDEN);
+    not_sent = false;
+  }
+
 
   if (can_send && now >= next_send_time)
   {
