@@ -199,15 +199,6 @@ void setup()
 
   mt_serial_init(SERIAL_RX_PIN, SERIAL_TX_PIN, BAUD_RATE);
   mt_request_node_report(connected_callback);
-
-  Serial.print("Waiting for my node number to be set...\n");
-  while (my_node_num == 0)
-  {
-    uint32_t now = millis();
-    mt_loop(now);
-    Serial.print(".");
-    delay(100);
-  }
   
 }
 
@@ -217,18 +208,18 @@ void loop()
   uint32_t now = millis();
   can_send = mt_loop(now);
 
-  if (can_send && not_sent){
+  if (can_send && !not_yet_connected && not_sent){
+    Serial.print("My Node Number is: ");
+    Serial.println(my_node_num);
+
     Serial.println("sending role change...");
     mt_send_set_role(meshtastic_Config_DeviceConfig_Role_CLIENT_HIDDEN);
     not_sent = false;
   }
 
-
   if (can_send && now >= next_send_time)
   {
 
-    Serial.print("My Node Number is: ");
-    Serial.println(my_node_num);
     next_send_time = now + SEND_PERIOD * 1000;
     Serial.println("Looping...");
   }
