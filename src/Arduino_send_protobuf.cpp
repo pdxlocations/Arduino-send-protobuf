@@ -107,12 +107,12 @@ bool mt_send_admin_payload(const meshtastic_Data_payload_t &payload)
   return mt_send_toRadio(toRadio);
 }
 
-bool mt_send_set_role()
+bool mt_send_set_role(meshtastic_Config_DeviceConfig_Role role)
 {
   meshtastic_AdminMessage admin = meshtastic_AdminMessage_init_default;
   admin.which_payload_variant = meshtastic_AdminMessage_set_config_tag;
   admin.set_config.which_payload_variant = meshtastic_Config_device_tag;
-  admin.set_config.payload_variant.device.role = meshtastic_Config_DeviceConfig_Role_CLIENT_MUTE;
+  admin.set_config.payload_variant.device.role = role;
   meshtastic_Data_payload_t payload;
   if (!encode_admin_message(admin, payload))
     return false;
@@ -128,28 +128,60 @@ void connected_callback(mt_node_t *node, mt_nr_progress_t progress)
   not_yet_connected = false;
 }
 
+void print_device_config(const meshtastic_Config_DeviceConfig &device) {
+  Serial.println("DeviceConfig:");
+  Serial.print("  Role: ");
+  Serial.println(device.role);
+  Serial.print("  Serial Number: ");
+  Serial.println(device.is_managed);
+  // Print other fields as needed
+}
+
+void print_lora_config(const meshtastic_Config_LoRaConfig &lora) {
+  Serial.println("LoRaConfig:");
+  Serial.print("  Modem Preset: ");
+  Serial.println(lora.modem_preset);
+  Serial.print("  Region: ");
+  Serial.println(lora.region);
+  // Print more lora fields as needed
+}
+
+void print_config(const meshtastic_Config &config) {
+  Serial.println("==== Config ====");
+  if (config.which_payload_variant == meshtastic_Config_device_tag) {
+    print_device_config(config.payload_variant.device);
+  } else if (config.which_payload_variant == meshtastic_Config_lora_tag) {
+    print_lora_config(config.payload_variant.lora);
+  } else {
+    Serial.print("Unhandled config payload type: ");
+    Serial.println(config.which_payload_variant);
+  }
+}
+
 void node_report_callback(mt_node_t *node, mt_nr_progress_t progress)
 {
-  if (progress == MT_NR_DONE)
-  {
+  if (progress == MT_NR_DONE) {
     Serial.println("Node report completed!");
     return;
   }
 
-  if (progress == MT_NR_INVALID)
-  {
+  if (progress == MT_NR_INVALID) {
     Serial.println("Invalid node report response.");
     return;
   }
 
-  if (node)
-  {
-    // Check if this node is the current device
-    if (node->is_mine)
-    {
+  if (node) {
+    if (node->is_mine) {
       Serial.print("I am: ");
       Serial.println(my_node_num);
     }
+
+    // // If config is available
+    // if (node->config) {
+    //   print_config(node->config);
+    // } else {
+    //   Serial.println("No config found in node.");
+    // }
   }
 }
 
@@ -169,22 +201,22 @@ void setup()
     }
   }
 
-  Serial.println("Booted Meshtastic in serial mode");
+
+  randomSeed(micros());
 
   mt_serial_init(SERIAL_RX_PIN, SERIAL_TX_PIN, BAUD_RATE);
-  randomSeed(micros());
   mt_request_node_report(connected_callback);
 
-  Serial.print("Waiting for my node number to be set... ");
+  Serial.print("Waiting for my node number to be set...");
   while (my_node_num == 0)
   {
     mt_loop(millis());
     Serial.print(".");
-    delay(10);
+    delay(100);
   }
 
   Serial.println("sending role change...");
-  mt_send_set_role();
+  mt_send_set_role(meshtastic_Config_DeviceConfig_Role_CLIENT_HIDDEN);
 }
 
 void loop()
